@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RIPE.AI — Fruit Ripeness Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <!-- AMBIENT BACKGROUND -->
+    <div class="ambient" aria-hidden="true">
+      <div class="ambient-orb ambient-orb--1"></div>
+      <div class="ambient-orb ambient-orb--2"></div>
+      <div class="ambient-orb ambient-orb--3"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <a class="navbar__logo" href="#home">
+        <div class="navbar__logo-icon">🍊</div>
+        <span class="navbar__logo-text">RIPE.AI</span>
+      </a>
+
+      <ul class="navbar__links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#technology">Technology</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#scanner-photo" class="nav-link--active">Scanner</a></li>
+        <li><a href="#scanner-realtime">Realtime</a></li>
+      </ul>
+
+      <div class="navbar__right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span class="theme-toggle__icon theme-toggle__icon--dark">🌙</span>
+          <span class="theme-toggle__icon theme-toggle__icon--light">☀️</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ══════════════════════════════════
+       SECTION: HOME (HERO)
+  ══════════════════════════════════ -->
+    <section class="section-home" id="home">
+      <div class="hero">
+        <div class="hero__tag">
+          <span class="hero__tag-dot"></span>
+          Computer Vision · Semester 4 · Kelompok 1
+        </div>
+        <h1 class="hero__title">
+          AI-Powered Fruit<br />
+          <em class="hero__title-gradient">Ripeness Detection</em>
+        </h1>
+        <p class="hero__subtitle">
+          Classify the ripeness of bananas, strawberries, and oranges instantly
+          using traditional computer vision — HSV color features, GLCM texture
+          analysis, and SVM classification. No deep learning required.
+        </p>
+        <div class="hero__ctas">
+          <a href="#scanner-photo" class="btn-primary">📷 Scan with Photo</a>
+          <a href="#scanner-realtime" class="btn-secondary"
+            >🎥 Realtime Camera</a
+          >
+        </div>
+        <div class="hero__stats">
+          <div class="stat">
+            <span class="stat__value">3</span>
+            <span class="stat__label">Fruit Types</span>
+          </div>
+          <div class="stat__divider"></div>
+          <div class="stat">
+            <span class="stat__value">3</span>
+            <span class="stat__label">Ripeness Stages</span>
+          </div>
+          <div class="stat__divider"></div>
+          <div class="stat">
+            <span class="stat__value">—</span>
+            <span class="stat__label">Model Accuracy</span>
+          </div>
+          <div class="stat__divider"></div>
+          <div class="stat">
+            <span class="stat__value">9</span>
+            <span class="stat__label">Total Classes</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+       SECTION: ABOUT
+  ══════════════════════════════════ -->
+    <section class="section-about content-section" id="about">
+      <div class="content-section__inner">
+        <div class="section-eyebrow">About</div>
+        <h2 class="section-title">What is RIPE.AI?</h2>
+        <p class="section-sub">
+          A computer vision project built for LE01 Semester 4 — Binus University
+        </p>
+
+        <div class="about-grid">
+          <div class="about-card">
+            <div class="about-card__icon">🎯</div>
+            <h3 class="about-card__title">Objective</h3>
+            <p class="about-card__text">
+              Automatically classify fruit ripeness into three stages — unripe,
+              ripe, and rotten — to support quality control and reduce food
+              waste.
+            </p>
+          </div>
+          <div class="about-card">
+            <div class="about-card__icon">🧪</div>
+            <h3 class="about-card__title">Approach</h3>
+            <p class="about-card__text">
+              Traditional computer vision pipeline using HSV color analysis and
+              GLCM texture features, classified by a Support Vector Machine
+              (SVM) with RBF kernel across 9 classes (3 fruits × 3 stages).
+            </p>
+          </div>
+          <div class="about-card">
+            <div class="about-card__icon">👥</div>
+            <h3 class="about-card__title">Team</h3>
+            <p class="about-card__text">
+              Nathan Valliant · Angelo Bryan Widjanaka · Muhammad Mirza Wirya ·
+              Robben Ethan Athlee · Audi Joel Rahardja · Yalvin Clay
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+       SECTION: TECHNOLOGY
+  ══════════════════════════════════ -->
+    <section class="section-tech content-section" id="technology">
+      <div class="content-section__inner">
+        <div class="section-eyebrow">Technology</div>
+        <h2 class="section-title">The CV Pipeline</h2>
+        <p class="section-sub">
+          Traditional computer vision — no deep learning required
+        </p>
+
+        <div class="tech-steps">
+          <div class="tech-step">
+            <div class="tech-step__num">01</div>
+            <div class="tech-step__body">
+              <div class="tech-step__name">Image Preprocessing</div>
+              <div class="tech-step__desc">
+                Resize to 128×128 · Gaussian blur (5×5) · Otsu's thresholding
+                for fruit segmentation from background
+              </div>
+            </div>
+          </div>
+          <div class="tech-step">
+            <div class="tech-step__num">02</div>
+            <div class="tech-step__body">
+              <div class="tech-step__name">HSV Color Features</div>
+              <div class="tech-step__desc">
+                Extract mean &amp; std of Hue, Saturation, Value channels from
+                masked fruit pixels — captures ripeness-related color
+                transitions
+              </div>
+            </div>
+          </div>
+          <div class="tech-step">
+            <div class="tech-step__num">03</div>
+            <div class="tech-step__body">
+              <div class="tech-step__name">GLCM Texture Features</div>
+              <div class="tech-step__desc">
+                Gray-Level Co-occurrence Matrix at distance=5, angles=[0°, 45°]
+                — extracts contrast, correlation, energy, and homogeneity
+              </div>
+            </div>
+          </div>
+          <div class="tech-step">
+            <div class="tech-step__num">04</div>
+            <div class="tech-step__body">
+              <div class="tech-step__name">SVM Classification</div>
+              <div class="tech-step__desc">
+                StandardScaler normalization → SVC with RBF kernel, One-vs-Rest
+                strategy · GridSearchCV tuned: C=[0.1,1,10], γ=[scale,0.001] ·
+                9-class output (3 fruits × 3 stages)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+       SECTION: FEATURES
+  ══════════════════════════════════ -->
+    <section class="section-features content-section" id="features">
+      <div class="content-section__inner">
+        <div class="section-eyebrow">Features</div>
+        <h2 class="section-title">What RIPE.AI Can Do</h2>
+        <p class="section-sub">Two detection modes for every use case</p>
+
+        <div class="features-grid">
+          <div class="feature-card feature-card--highlight">
+            <div class="feature-card__icon">📷</div>
+            <h3 class="feature-card__title">Photo Scanner</h3>
+            <p class="feature-card__text">
+              Upload any image — drag & drop or browse. The pipeline extracts 47
+              features and classifies across 9 classes in under a second.
+            </p>
+            <ul class="feature-card__list">
+              <li>Supports JPG, PNG, JPEG, WEBP</li>
+              <li>Shows confidence score &amp; probabilities</li>
+              <li>Displays all 12 extracted features</li>
+            </ul>
+          </div>
+          <div class="feature-card feature-card--highlight">
+            <div class="feature-card__icon">🎥</div>
+            <h3 class="feature-card__title">Realtime Camera</h3>
+            <p class="feature-card__text">
+              Use your device camera for live ripeness detection. Frames are
+              analyzed continuously, updating results in real-time.
+            </p>
+            <ul class="feature-card__list">
+              <li>Live video feed from webcam</li>
+              <li>Continuous frame analysis</li>
+              <li>Instant result overlay</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">🍌</div>
+            <h3 class="feature-card__title">3 Fruit Types</h3>
+            <p class="feature-card__text">
+              Trained on Banana, Strawberry, and Orange — chosen for maximum
+              visual distinctiveness to improve SVM classification accuracy.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">⚡</div>
+            <h3 class="feature-card__title">Dual Mode</h3>
+            <p class="feature-card__text">
+              Connects to Flask Python backend when available. Falls back
+              seamlessly to browser-native JS pipeline — no server needed.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">🌙</div>
+            <h3 class="feature-card__title">Dark / Light Mode</h3>
+            <p class="feature-card__text">
+              Full dark and light theme support, persisted across sessions via
+              localStorage.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">📊</div>
+            <h3 class="feature-card__title">Full Transparency</h3>
+            <p class="feature-card__text">
+              Every prediction shows class probability distribution and all 12
+              raw feature values for complete interpretability.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+       SECTION: SCANNER WITH PHOTO
+  ══════════════════════════════════ -->
+    <section class="section-scanner content-section" id="scanner-photo">
+      <div class="content-section__inner">
+        <div class="section-eyebrow">Scanner</div>
+        <h2 class="section-title">Scan with Photo</h2>
+        <p class="section-sub">
+          Upload an image of a fruit to detect its ripeness stage
+        </p>
+
+        <!-- Fruit chips -->
+        <div class="fruits-bar">
+          <div class="fruit-chip">🍌 Banana</div>
+          <div class="fruit-chip">🍓 Strawberry</div>
+          <div class="fruit-chip">🍊 Orange</div>
+        </div>
+
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone__inner">
+            <div class="drop-zone__icon">📷</div>
+            <h3 class="drop-zone__title">Drop your fruit image here</h3>
+            <p class="drop-zone__sub">
+              Drag &amp; drop or click to upload · JPG, PNG, JPEG, WEBP
+            </p>
+            <button class="btn-upload" id="uploadBtn">
+              <span>⬆</span> Upload Fruit Image
+            </button>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" hidden />
+        </div>
+
+        <!-- Result card -->
+        <div class="result-card" id="resultCard" hidden>
+          <div class="result-card__header">
+            <div class="result-card__header-left">
+              <span class="result-card__icon">🔬</span>
+              <span class="result-card__title">Analysis Result</span>
+              <span class="live-badge" id="liveBadge" hidden>
+                <span class="live-badge__dot"></span>Live
+              </span>
+              <span class="source-tag" id="sourceTag" hidden></span>
+            </div>
+            <button class="btn-reset" id="resetBtn">✕ New Scan</button>
+          </div>
+
+          <div class="result-card__body">
+            <div class="img-panel" id="imgPanel">
+              <img
+                class="img-panel__img"
+                id="previewImg"
+                src=""
+                alt="Uploaded fruit"
+              />
+              <div class="scan-overlay" id="scanOverlay" hidden>
+                <div class="scan-line"></div>
+                <div class="scan-corner scan-corner--tl"></div>
+                <div class="scan-corner scan-corner--tr"></div>
+                <div class="scan-corner scan-corner--bl"></div>
+                <div class="scan-corner scan-corner--br"></div>
+              </div>
+            </div>
+
+            <div class="info-panel">
+              <div class="loading-state" id="loadingState" hidden>
+                <div class="loading-state__step">
+                  <div class="spinner"></div>
+                  <span class="loading-state__text" id="loadingText"
+                    >Initializing...</span
+                  >
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-bar__fill" id="progressFill"></div>
+                </div>
+                <div class="loading-state__steps-list" id="stepsList"></div>
+              </div>
+
+              <div class="analysis" id="analysisResults" hidden>
+                <div class="result-grid">
+                  <div class="result-item">
+                    <span class="result-item__label">Fruit Type</span>
+                    <span class="result-item__value" id="fruitType">—</span>
+                  </div>
+                  <div class="result-item">
+                    <span class="result-item__label">Ripeness Stage</span>
+                    <div
+                      class="result-item__value result-item__value--ripeness"
+                    >
+                      <span class="ripeness-dot" id="ripenessDot"></span>
+                      <span id="ripenessStatus">—</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="confidence-block">
+                  <div class="confidence-block__header">
+                    <span class="block-label">Model Confidence</span>
+                    <span class="confidence-block__pct" id="confidencePct"
+                      >0%</span
+                    >
+                  </div>
+                  <div class="conf-track">
+                    <div class="conf-fill" id="confFill"></div>
+                  </div>
+                </div>
+                <div class="probs-block">
+                  <span class="block-label"
+                    >Class Probability Distribution</span
+                  >
+                  <div class="probs-list" id="probsList"></div>
+                </div>
+                <div class="features-block">
+                  <span class="block-label"
+                    >Extracted Features (HSV + GLCM + Shape)</span
+                  >
+                  <div class="features-chips" id="featuresChips"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+       SECTION: REALTIME SCANNER
+  ══════════════════════════════════ -->
+    <section class="section-realtime content-section" id="scanner-realtime">
+      <div class="content-section__inner">
+        <div class="section-eyebrow">Realtime</div>
+        <h2 class="section-title">Live Camera Scanner</h2>
+        <p class="section-sub">
+          Point your camera at a fruit for continuous real-time ripeness
+          detection
+        </p>
+
+        <div class="realtime-layout">
+          <!-- Camera panel -->
+          <div class="camera-panel">
+            <div class="camera-viewport" id="cameraViewport">
+              <!-- Idle state -->
+              <div class="camera-idle" id="cameraIdle">
+                <div class="camera-idle__icon">🎥</div>
+                <p class="camera-idle__text">Camera not started</p>
+                <p class="camera-idle__sub">Click the button below to begin</p>
+              </div>
+              <!-- Video feed -->
+              <video
+                class="camera-video"
+                id="cameraVideo"
+                autoplay
+                playsinline
+                muted
+                hidden
+              ></video>
+              <!-- Scan overlay on video -->
+              <div class="camera-overlay" id="cameraOverlay" hidden>
+                <div class="camera-scanbar" id="cameraScanbar"></div>
+                <div class="camera-corner camera-corner--tl"></div>
+                <div class="camera-corner camera-corner--tr"></div>
+                <div class="camera-corner camera-corner--bl"></div>
+                <div class="camera-corner camera-corner--br"></div>
+                <!-- Live result badge on video -->
+                <div class="camera-live-result" id="cameraLiveResult" hidden>
+                  <div class="camera-live-result__fruit" id="liveFruit">—</div>
+                  <div class="camera-live-result__ripeness" id="liveRipeness">
+                    —
+                  </div>
+                  <div class="camera-live-result__conf" id="liveConf">—</div>
+                </div>
+              </div>
+            </div>
+            <!-- Controls -->
+            <div class="camera-controls">
+              <button class="btn-camera" id="startCameraBtn">
+                🎥 Start Camera
+              </button>
+              <button
+                class="btn-camera btn-camera--stop"
+                id="stopCameraBtn"
+                hidden
+              >
+                ⏹ Stop Camera
+              </button>
+              <button
+                class="btn-camera btn-camera--capture"
+                id="captureBtn"
+                hidden
+              >
+                📸 Capture Frame
+              </button>
+              <select class="camera-select" id="cameraSelect" hidden>
+                <option value="">Select camera...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Live results panel -->
+          <div class="realtime-results" id="realtimeResults">
+            <div class="realtime-idle" id="realtimeIdle">
+              <p>Start camera to see live results here</p>
+            </div>
+            <div class="realtime-data" id="realtimeData" hidden>
+              <div class="rt-result-grid">
+                <div class="result-item">
+                  <span class="result-item__label">Fruit Type</span>
+                  <span class="result-item__value" id="rtFruitType">—</span>
+                </div>
+                <div class="result-item">
+                  <span class="result-item__label">Ripeness</span>
+                  <div class="result-item__value result-item__value--ripeness">
+                    <span class="ripeness-dot" id="rtRipenessDot"></span>
+                    <span id="rtRipenessStatus">—</span>
+                  </div>
+                </div>
+              </div>
+              <div class="confidence-block">
+                <div class="confidence-block__header">
+                  <span class="block-label">Confidence</span>
+                  <span class="confidence-block__pct" id="rtConfPct">0%</span>
+                </div>
+                <div class="conf-track">
+                  <div class="conf-fill" id="rtConfFill"></div>
+                </div>
+              </div>
+              <div class="probs-block">
+                <span class="block-label">Class Probabilities</span>
+                <div class="probs-list" id="rtProbsList"></div>
+              </div>
+              <div class="rt-fps">
+                <span class="block-label">Analysis Rate</span>
+                <span class="rt-fps__val" id="rtFps">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p class="footer__brand">RIPE.AI</p>
+      <p class="footer__sub">
+        Computer Vision Project · LE01 Semester 4 · Kelompok 1 · Binus
+        University
+      </p>
+      <p class="footer__members">
+        Nathan Valliant · Angelo Bryan Widjanaka · Muhammad Mirza Wirya · Robben
+        Ethan Athlee · Audi Joel Rahardja · Yalvin Clay
+      </p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
