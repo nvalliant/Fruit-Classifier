@@ -12,7 +12,7 @@ const API_BASE =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1"
     ? "http://localhost:5000"
-    : "https://your-production-api-url.com";
+    : "https://fruit-classifier-three.vercel.app/";
 const API_PREDICT = `${API_BASE}/predict`;
 const API_HEALTH = `${API_BASE}/health`;
 let serverAvailable = false;
