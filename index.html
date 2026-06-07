@@ -11,7 +11,7 @@
     />
     <link
       rel="stylesheet"
-      href="style.css"
+      href="{{ url_for('static', filename='style.css') }}"
     />
   </head>
   <body>
@@ -35,7 +35,6 @@
         <li><a href="#technology">Technology</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#scanner-photo" class="nav-link--active">Scanner</a></li>
-        <li><a href="#scanner-realtime">Realtime</a></li>
       </ul>
 
       <div class="navbar__right">
@@ -66,9 +65,6 @@
         </p>
         <div class="hero__ctas">
           <a href="#scanner-photo" class="btn-primary">📷 Scan with Photo</a>
-          <a href="#scanner-realtime" class="btn-secondary"
-            >🎥 Realtime Camera</a
-          >
         </div>
         <div class="hero__stats">
           <div class="stat">
@@ -82,7 +78,7 @@
           </div>
           <div class="stat__divider"></div>
           <div class="stat">
-            <span class="stat__value">—</span>
+            <span class="stat__value">90%</span>
             <span class="stat__label">Model Accuracy</span>
           </div>
           <div class="stat__divider"></div>
@@ -153,7 +149,7 @@
             <div class="tech-step__body">
               <div class="tech-step__name">Image Preprocessing</div>
               <div class="tech-step__desc">
-                Resize to 128×128 · Gaussian blur (5×5) · Otsu's thresholding
+                Resize to 128×128 · Gaussian blur (5×5) · GrabCut segmentation
                 for fruit segmentation from background
               </div>
             </div>
@@ -215,19 +211,6 @@
               <li>Supports JPG, PNG, JPEG, WEBP</li>
               <li>Shows confidence score &amp; probabilities</li>
               <li>Displays all 12 extracted features</li>
-            </ul>
-          </div>
-          <div class="feature-card feature-card--highlight">
-            <div class="feature-card__icon">🎥</div>
-            <h3 class="feature-card__title">Realtime Camera</h3>
-            <p class="feature-card__text">
-              Use your device camera for live ripeness detection. Frames are
-              analyzed continuously, updating results in real-time.
-            </p>
-            <ul class="feature-card__list">
-              <li>Live video feed from webcam</li>
-              <li>Continuous frame analysis</li>
-              <li>Instant result overlay</li>
             </ul>
           </div>
           <div class="feature-card">
@@ -390,121 +373,6 @@
       </div>
     </section>
 
-    <!-- ══════════════════════════════════
-       SECTION: REALTIME SCANNER
-  ══════════════════════════════════ -->
-    <section class="section-realtime content-section" id="scanner-realtime">
-      <div class="content-section__inner">
-        <div class="section-eyebrow">Realtime</div>
-        <h2 class="section-title">Live Camera Scanner</h2>
-        <p class="section-sub">
-          Point your camera at a fruit for continuous real-time ripeness
-          detection
-        </p>
-
-        <div class="realtime-layout">
-          <!-- Camera panel -->
-          <div class="camera-panel">
-            <div class="camera-viewport" id="cameraViewport">
-              <!-- Idle state -->
-              <div class="camera-idle" id="cameraIdle">
-                <div class="camera-idle__icon">🎥</div>
-                <p class="camera-idle__text">Camera not started</p>
-                <p class="camera-idle__sub">Click the button below to begin</p>
-              </div>
-              <!-- Video feed -->
-              <video
-                class="camera-video"
-                id="cameraVideo"
-                autoplay
-                playsinline
-                muted
-                hidden
-              ></video>
-              <!-- Scan overlay on video -->
-              <div class="camera-overlay" id="cameraOverlay" hidden>
-                <div class="camera-scanbar" id="cameraScanbar"></div>
-                <div class="camera-corner camera-corner--tl"></div>
-                <div class="camera-corner camera-corner--tr"></div>
-                <div class="camera-corner camera-corner--bl"></div>
-                <div class="camera-corner camera-corner--br"></div>
-                <!-- Live result badge on video -->
-                <div class="camera-live-result" id="cameraLiveResult" hidden>
-                  <div class="camera-live-result__fruit" id="liveFruit">—</div>
-                  <div class="camera-live-result__ripeness" id="liveRipeness">
-                    —
-                  </div>
-                  <div class="camera-live-result__conf" id="liveConf">—</div>
-                </div>
-              </div>
-            </div>
-            <!-- Controls -->
-            <div class="camera-controls">
-              <button class="btn-camera" id="startCameraBtn">
-                🎥 Start Camera
-              </button>
-              <button
-                class="btn-camera btn-camera--stop"
-                id="stopCameraBtn"
-                hidden
-              >
-                ⏹ Stop Camera
-              </button>
-              <button
-                class="btn-camera btn-camera--capture"
-                id="captureBtn"
-                hidden
-              >
-                📸 Capture Frame
-              </button>
-              <select class="camera-select" id="cameraSelect" hidden>
-                <option value="">Select camera...</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Live results panel -->
-          <div class="realtime-results" id="realtimeResults">
-            <div class="realtime-idle" id="realtimeIdle">
-              <p>Start camera to see live results here</p>
-            </div>
-            <div class="realtime-data" id="realtimeData" hidden>
-              <div class="rt-result-grid">
-                <div class="result-item">
-                  <span class="result-item__label">Fruit Type</span>
-                  <span class="result-item__value" id="rtFruitType">—</span>
-                </div>
-                <div class="result-item">
-                  <span class="result-item__label">Ripeness</span>
-                  <div class="result-item__value result-item__value--ripeness">
-                    <span class="ripeness-dot" id="rtRipenessDot"></span>
-                    <span id="rtRipenessStatus">—</span>
-                  </div>
-                </div>
-              </div>
-              <div class="confidence-block">
-                <div class="confidence-block__header">
-                  <span class="block-label">Confidence</span>
-                  <span class="confidence-block__pct" id="rtConfPct">0%</span>
-                </div>
-                <div class="conf-track">
-                  <div class="conf-fill" id="rtConfFill"></div>
-                </div>
-              </div>
-              <div class="probs-block">
-                <span class="block-label">Class Probabilities</span>
-                <div class="probs-list" id="rtProbsList"></div>
-              </div>
-              <div class="rt-fps">
-                <span class="block-label">Analysis Rate</span>
-                <span class="rt-fps__val" id="rtFps">—</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- FOOTER -->
     <footer class="footer">
       <p class="footer__brand">RIPE.AI</p>
@@ -518,6 +386,6 @@
       </p>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
   </body>
 </html>
