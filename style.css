@@ -17,6 +17,10 @@
   --red:    #ef4444;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* ─── DARK THEME ─── */
 [data-theme="dark"] {
   --bg:           #060a10;
