@@ -584,7 +584,6 @@ function startGuideOverlay() {
     pointerEvents: "none",
     zIndex: "2",
   });
-  cameraOverlay.style.position = "relative";
   cameraOverlay.appendChild(GUIDE_OVERLAY_CANVAS);
   guideOverlayCtx = GUIDE_OVERLAY_CANVAS.getContext("2d");
   drawGuideOverlay();
