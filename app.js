@@ -541,6 +541,337 @@ function resetUI() {
 }
 
 /* ═══════════════════════════════════════════
+   8. REALTIME CAMERA SCANNER
+═══════════════════════════════════════════ */
+const startCameraBtn = document.getElementById("startCameraBtn");
+const stopCameraBtn = document.getElementById("stopCameraBtn");
+const captureBtn = document.getElementById("captureBtn");
+const cameraSelect = document.getElementById("cameraSelect");
+const cameraVideo = document.getElementById("cameraVideo");
+const cameraIdle = document.getElementById("cameraIdle");
+const cameraOverlay = document.getElementById("cameraOverlay");
+const cameraLiveResult = document.getElementById("cameraLiveResult");
+const liveFruit = document.getElementById("liveFruit");
+const liveRipeness = document.getElementById("liveRipeness");
+const liveConf = document.getElementById("liveConf");
+const realtimeIdle = document.getElementById("realtimeIdle");
+const realtimeData = document.getElementById("realtimeData");
+const rtFruitType = document.getElementById("rtFruitType");
+const rtRipenessDot = document.getElementById("rtRipenessDot");
+const rtRipenessStatus = document.getElementById("rtRipenessStatus");
+const rtConfPct = document.getElementById("rtConfPct");
+const rtConfFill = document.getElementById("rtConfFill");
+const rtProbsList = document.getElementById("rtProbsList");
+const rtFpsEl = document.getElementById("rtFps");
+
+let stream = null;
+let realtimeInterval = null;
+let lastFrameTime = 0;
+let frameCount = 0;
+let fpsAccum = 0;
+
+// ── Guide overlay for fruit framing ──────────────────────────────────────────
+const GUIDE_OVERLAY_CANVAS = document.createElement("canvas");
+let guideOverlayCtx = null;
+
+function startGuideOverlay() {
+  Object.assign(GUIDE_OVERLAY_CANVAS.style, {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none",
+    zIndex: "2",
+  });
+  cameraOverlay.style.position = "relative";
+  cameraOverlay.appendChild(GUIDE_OVERLAY_CANVAS);
+  guideOverlayCtx = GUIDE_OVERLAY_CANVAS.getContext("2d");
+  drawGuideOverlay();
+}
+
+function stopGuideOverlay() {
+  if (GUIDE_OVERLAY_CANVAS.parentNode)
+    GUIDE_OVERLAY_CANVAS.parentNode.removeChild(GUIDE_OVERLAY_CANVAS);
+  guideOverlayCtx = null;
+}
+
+function getGuideRect() {
+  const cw = GUIDE_OVERLAY_CANVAS.width || 640;
+  const ch = GUIDE_OVERLAY_CANVAS.height || 480;
+  return {
+    x: Math.round(cw * 0.2),
+    y: Math.round(ch * 0.1),
+    w: Math.round(cw * 0.6),
+    h: Math.round(ch * 0.8),
+  };
+}
+
+function drawGuideOverlay() {
+  if (!guideOverlayCtx || !stream) return;
+
+  // Sync canvas resolution to its actual displayed size every frame
+  const rect = GUIDE_OVERLAY_CANVAS.getBoundingClientRect();
+  const cw = Math.round(rect.width);
+  const ch = Math.round(rect.height);
+  if (cw === 0 || ch === 0) {
+    requestAnimationFrame(drawGuideOverlay);
+    return;
+  }
+  GUIDE_OVERLAY_CANVAS.width = cw;
+  GUIDE_OVERLAY_CANVAS.height = ch;
+
+  const ctx = guideOverlayCtx;
+  const { x, y, w, h } = getGuideRect();
+
+  ctx.clearRect(0, 0, cw, ch);
+
+  // Dim outside guide
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.clearRect(x, y, w, h);
+
+  // Dashed border
+  ctx.strokeStyle = "#00ff88";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 4]);
+  ctx.strokeRect(x, y, w, h);
+
+  // Corner accents
+  ctx.setLineDash([]);
+  ctx.strokeStyle = "#00ff88";
+  ctx.lineWidth = 4;
+  const cs = 18;
+  [
+    [x, y, 1, 1],
+    [x + w, y, -1, 1],
+    [x, y + h, 1, -1],
+    [x + w, y + h, -1, -1],
+  ].forEach(([cx, cy, sx, sy]) => {
+    ctx.beginPath();
+    ctx.moveTo(cx + sx * cs, cy);
+    ctx.lineTo(cx, cy);
+    ctx.lineTo(cx, cy + sy * cs);
+    ctx.stroke();
+  });
+
+  // Label
+  ctx.font = "13px sans-serif";
+  ctx.fillStyle = "#00ff88";
+  ctx.fillText("Place fruit here", x + 8, y - 8);
+
+  requestAnimationFrame(drawGuideOverlay);
+}
+
+startCameraBtn.addEventListener("click", startCamera);
+stopCameraBtn.addEventListener("click", stopCamera);
+captureBtn.addEventListener("click", captureFrame);
+cameraSelect.addEventListener("change", switchCamera);
+
+async function startCamera() {
+  try {
+    // Populate camera list first
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cams = devices.filter((d) => d.kind === "videoinput");
+    if (cams.length > 1) {
+      cameraSelect.innerHTML = cams
+        .map(
+          (d, i) =>
+            `<option value="${d.deviceId}">${d.label || "Camera " + (i + 1)}</option>`,
+        )
+        .join("");
+      cameraSelect.hidden = false;
+    }
+
+    const deviceId = cameraSelect.value || undefined;
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: deviceId
+        ? {
+            deviceId: { exact: deviceId },
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          }
+        : { width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false,
+    });
+
+    cameraVideo.srcObject = stream;
+    cameraVideo.hidden = false;
+    cameraIdle.hidden = true;
+    cameraOverlay.hidden = false;
+
+    startCameraBtn.hidden = true;
+    stopCameraBtn.hidden = false;
+    captureBtn.hidden = false;
+
+    // Start continuous analysis
+    frameCount = 0;
+    fpsAccum = 0;
+    lastFrameTime = performance.now();
+    realtimeInterval = setInterval(analyzeFrame, 1200);
+    analyzeFrame();
+    startGuideOverlay();
+  } catch (err) {
+    cameraIdle.querySelector(".camera-idle__text").textContent =
+      "⚠️ Camera access denied";
+    cameraIdle.querySelector(".camera-idle__sub").textContent = err.message;
+  }
+}
+
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop());
+    stream = null;
+  }
+  clearInterval(realtimeInterval);
+  realtimeInterval = null;
+  stopGuideOverlay();
+
+  cameraVideo.hidden = true;
+  cameraVideo.srcObject = null;
+  cameraIdle.hidden = false;
+  cameraOverlay.hidden = true;
+  cameraLiveResult.hidden = true;
+
+  startCameraBtn.hidden = false;
+  stopCameraBtn.hidden = true;
+  captureBtn.hidden = true;
+  cameraSelect.hidden = true;
+
+  hide(realtimeData);
+  show(realtimeIdle);
+  rtFpsEl.textContent = "—";
+  cameraIdle.querySelector(".camera-idle__text").textContent =
+    "Camera not started";
+  cameraIdle.querySelector(".camera-idle__sub").textContent =
+    "Click the button below to begin";
+}
+
+async function switchCamera() {
+  if (!stream) return;
+  stopCamera();
+  await sleep(300);
+  startCamera();
+}
+
+async function analyzeFrame() {
+  if (!stream || cameraVideo.readyState < 2) return;
+  const { x, y, w, h } = getGuideRect();
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.translate(128, 0);
+  ctx.scale(-1, 1);
+  // Draw only the guide region, scaled to 128×128
+  ctx.drawImage(cameraVideo, x, y, w, h, 0, 0, 128, 128);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  // Always try the Python server. If unavailable, show a clear error.
+  let result;
+  if (serverAvailable) {
+    try {
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      result = await callServerAPI(dataUrl);
+    } catch (err) {
+      updateRealtimeUI({
+        fruitType: "error",
+        ripenessStage: "unknown",
+        classLabel: "error",
+        confidence: 0,
+        probs: {},
+        features: {},
+        source: "error",
+        errorMessage: err.message,
+      });
+      return;
+    }
+  } else {
+    updateRealtimeUI({
+      fruitType: "error",
+      ripenessStage: "unknown",
+      classLabel: "error",
+      confidence: 0,
+      probs: {},
+      features: {},
+      source: "error",
+      errorMessage:
+        "Server tidak tersedia — pastikan Flask berjalan di " + API_BASE,
+    });
+    return;
+  }
+  result.features = result.features || {};
+  updateRealtimeUI(result);
+}
+
+function captureFrame() {
+  if (!stream || cameraVideo.readyState < 2) return;
+  const { x, y, w, h } = getGuideRect();
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.translate(w, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(cameraVideo, x, y, w, h, 0, 0, w, h);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+  previewImg.src = dataUrl;
+  document
+    .getElementById("scanner-photo")
+    .scrollIntoView({ behavior: "smooth" });
+  startPhotoAnalysis(dataUrl);
+}
+
+function updateRealtimeUI(result) {
+  show(realtimeData);
+  hide(realtimeIdle);
+
+  if (result.source === "error") {
+    cameraLiveResult.hidden = false;
+    liveFruit.textContent = "⚠️ Error";
+    liveRipeness.textContent = result.errorMessage || "Server tidak tersedia";
+    liveConf.textContent = "";
+    rtFruitType.textContent = "⚠️ Server tidak tersedia";
+    rtRipenessDot.style.background = "#ef4444";
+    rtRipenessStatus.textContent =
+      result.errorMessage || "Periksa koneksi Flask";
+    rtConfPct.textContent = "—";
+    rtConfFill.style.width = "0%";
+    rtProbsList.innerHTML = "";
+    return;
+  }
+  liveFruit.textContent = `${FRUIT_EMOJI[result.fruitType] || "?"} ${cap(result.fruitType)}`;
+  liveRipeness.textContent = `${RIPENESS_ICON[result.ripenessStage]} ${cap(result.ripenessStage)}`;
+  liveConf.textContent = `${Math.round(result.confidence * 100)}% confidence`;
+
+  // Side panel
+  rtFruitType.textContent = `${FRUIT_EMOJI[result.fruitType] || "?"} ${cap(result.fruitType)}`;
+  rtRipenessDot.style.background = RIPENESS_COLOR[result.ripenessStage];
+  rtRipenessStatus.textContent = `${RIPENESS_ICON[result.ripenessStage]} ${cap(result.ripenessStage)}`;
+
+  const pct = Math.round(result.confidence * 100);
+  rtConfPct.textContent = pct + "%";
+  requestAnimationFrame(() => {
+    rtConfFill.style.width = pct + "%";
+  });
+
+  const sorted = Object.entries(result.probs)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  rtProbsList.innerHTML = sorted
+    .map(([cls, prob], i) => {
+      const p = Math.round(prob * 100),
+        [ft, rs] = cls.split("_");
+      return `<div class="prob-row"><span class="prob-row__name">${FRUIT_EMOJI[ft] || "?"} ${cap(ft)} ${cap(rs)}</span><div class="prob-row__track"><div class="prob-row__fill ${i === 0 ? "prob-row__fill--top" : ""}" style="width:${p}%"></div></div><span class="prob-row__pct">${p}%</span></div>`;
+    })
+    .join("");
+}
+
+/* ═══════════════════════════════════════════
    9. ACTIVE NAV LINK on scroll
 ═══════════════════════════════════════════ */
 const sections = [
@@ -549,6 +880,7 @@ const sections = [
   { id: "technology", link: "#technology" },
   { id: "features", link: "#features" },
   { id: "scanner-photo", link: "#scanner-photo" },
+  { id: "scanner-realtime", link: "#scanner-realtime" },
 ];
 const navLinks = document.querySelectorAll(".navbar__links a");
 const observer = new IntersectionObserver(
