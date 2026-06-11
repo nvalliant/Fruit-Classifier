@@ -439,13 +439,21 @@ main { position: relative; z-index: 1; }
   border: 1px solid var(--border); border-radius: 18px;
   overflow: hidden; flex: 1; min-height: 380px;
   display: flex; align-items: center; justify-content: center;
+  width: 100%;
 }
 .camera-idle { text-align: center; padding: 40px 20px; }
 .camera-idle__icon { font-size: 3rem; display: block; margin-bottom: 12px; }
 .camera-idle__text { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .camera-idle__sub { font-size: 0.85rem; color: var(--text-muted); }
 .camera-video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
-.camera-overlay { position: absolute; inset: 0; pointer-events: none; }
+.camera-overlay { 
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 .camera-scanbar {
   position: absolute; left: 0; right: 0; height: 3px;
   background: linear-gradient(90deg, transparent, var(--blue-bright), var(--cyan), var(--blue-bright), transparent);
